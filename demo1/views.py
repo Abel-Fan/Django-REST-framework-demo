@@ -5,10 +5,14 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+
 
 from .models import Goods
 from .serializers import GoodsSerializer
 
+
+from django.contrib.auth import authenticate
 import  json
 # Create your views here.
 
@@ -50,3 +54,14 @@ class GoodsOneView(APIView):
             obj.delete()
             return Response({'msg':'ok'}, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class Login(APIView):
+    def post(self,request):
+        user = authenticate(username=request.POST['username'], password=request.POST['password'])
+        if user is not None:
+            token = Token.objects.filter(user_id=user.id).first()
+            print(token.key)
+            return Response({'msg':'ok'})
+        else:
+            return Response({'msg': 'no'})
