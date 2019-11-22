@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'demo1',
     'rest_framework',
     'rest_framework.authtoken',
-
 ]
 
 MIDDLEWARE = [

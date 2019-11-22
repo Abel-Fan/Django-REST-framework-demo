@@ -7,12 +7,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
-
 from .models import Goods
 from .serializers import GoodsSerializer
 
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate,login
 import  json
 # Create your views here.
 
@@ -23,8 +22,29 @@ def index(request):
 
 # C B V
 
+
+
+from rest_framework.authentication import BaseAuthentication
+from rest_framework import exceptions
+class TokenAuth(BaseAuthentication):
+    def authenticate(self,request):
+        token = request.META.get("HTTP_AUTHENTICATION",None)
+
+        if token:
+            obj = Token.objects.filter(key=token)
+            if obj:
+                return None
+        raise exceptions.AuthenticationFailed('token 异常')
+
+
+
+
+
+
+
 class GoodsView(APIView):
     renderer_classes = [JSONRenderer]
+    authentication_classes = [TokenAuth]
     def get(self,request,*args,**kwargs):
         goods = Goods.objects.all()
         # 序列化
@@ -60,8 +80,8 @@ class Login(APIView):
     def post(self,request):
         user = authenticate(username=request.POST['username'], password=request.POST['password'])
         if user is not None:
+            login(request,user)
             token = Token.objects.filter(user_id=user.id).first()
-            print(token.key)
-            return Response({'msg':'ok'})
+            return Response({'msg':'ok','token':token.key})
         else:
             return Response({'msg': 'no'})
